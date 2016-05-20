@@ -91,9 +91,7 @@ module.exports = function (grunt) {
                 options: {
                     port: "<%= config.e2ePort %>",
                     hostname: "0.0.0.0",
-                    middleware: function (connect) {
-                        return [connect["static"](__dirname)];
-                    }
+                    base: __dirname
                 }
             }
         },
