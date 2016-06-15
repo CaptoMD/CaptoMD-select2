@@ -20,10 +20,8 @@ angular.module("rt.select2", [])
             }
         };
     })
-    .directive("select2", function ($rootScope, $timeout, $parse, $filter, $animate, select2Config, select2Stack) {
+    .directive("select2", function ($rootScope, $timeout, $parse, $animate, select2Config, select2Stack) {
         "use strict";
-
-        var filter = $filter("filter");
 
         function sortedKeys(obj) {
             var keys = [];
@@ -83,8 +81,6 @@ angular.module("rt.select2", [])
                     opts.allowClear = attrs.allowClear;
                 }
 
-                var filterOptions = $parse(attrs.optionsFilter);
-
                 // All values returned from Select2 are strings. This is a
                 // problem if you supply integer indexes: they'll become
                 // strings once passing through this directive. We keep a
@@ -92,17 +88,6 @@ angular.module("rt.select2", [])
                 // optionItems object, to be able to return the correctly typed
                 // value.
                 var optionItems = {};
-
-                function filterValues(values) {
-                    if (filterOptions) {
-                        var filterParams = filterOptions(scope);
-                        if (filterParams) {
-                            return filter(values, filterParams);
-                        }
-                    }
-
-                    return values;
-                }
 
                 if (attrs.s2Options) {
                     var match;
@@ -118,7 +103,7 @@ angular.module("rt.select2", [])
 
                     getOptions = function (callback) {
                         optionItems = {};
-                        var values = filterValues(valuesFn(scope));
+                        var values = valuesFn(scope);
                         var keys = (keyName ? sortedKeys(values) : values) || [];
 
                         var options = [];
@@ -149,7 +134,7 @@ angular.module("rt.select2", [])
                     };
 
                     opts.query = function (query) {
-                        var values = filterValues(valuesFn(scope));
+                        var values = valuesFn(scope);
                         var keys = (keyName ? sortedKeys(values) : values) || [];
 
                         var options = [];
