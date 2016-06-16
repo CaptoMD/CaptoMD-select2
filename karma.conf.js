@@ -1,25 +1,25 @@
-'use strict';
-
-module.exports = function(config)
+module.exports = function (config)
 {
-  config.set({
+    "use strict";
 
-    files: [
-      {pattern: 'bower_components/jquery/dist/jquery.js', watched: false},
-      {pattern: 'bower_components/select2/select2.js', watched: false},
-      {pattern: 'bower_components/angular/angular.js', watched: false},
-      {pattern: 'bower_components/angular-mocks/angular-mocks.js', watched: false},
+    config.set({
 
-      'src/**/*.js',
+        files: [
+            {pattern: "bower_components/jquery/dist/jquery.js", watched: false},
+            {pattern: "bower_components/select2/select2.js", watched: false},
+            {pattern: "bower_components/angular/angular.js", watched: false},
+            {pattern: "bower_components/angular-mocks/angular-mocks.js", watched: false},
 
-      // Test Specs
-      'test/unit/**/*.js'
-    ],
+            "src/**/*.js",
 
-    frameworks: [
-      'jasmine-jquery',
-      'jasmine',
-      'jasmine-matchers'
-    ]
-  });
+            // Test Specs
+            "test/unit/**/*.js"
+        ],
+
+        frameworks: [
+            "jasmine-jquery",
+            "jasmine",
+            "jasmine-matchers"
+        ]
+    });
 };
