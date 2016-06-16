@@ -260,7 +260,7 @@ angular.module("rt.select2", [])
                 $timeout(function () {
                     element.select2(opts);
                     element.on("change", function (e) {
-                        scope.$apply(function () {
+                        scope.$evalAsync(function () {
                             var val;
                             if (isMultiple) {
                                 var vals = [];
@@ -286,7 +286,7 @@ angular.module("rt.select2", [])
                             return;
                         }
 
-                        scope.$apply(controller.$setTouched);
+                        scope.$evalAsync(controller.$setTouched);
                     });
 
                     if (opts.allowClear) {
