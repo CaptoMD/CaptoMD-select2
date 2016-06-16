@@ -36,7 +36,7 @@ describe('Simple', function () {
 
     it('Should show selected value', function () {
         expect(page.getInputValue()).toEqual('');
-        expect(page.getChosenLabel()).toEqual('');
+        expect(page.getChosenLabel()).toEqual(' ');
     });
 
     it('Should switch value', function () {

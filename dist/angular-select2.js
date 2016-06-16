@@ -20,10 +20,8 @@ angular.module("rt.select2", [])
             }
         };
     })
-    .directive("select2", ["$rootScope", "$timeout", "$parse", "$filter", "select2Config", "select2Stack", function ($rootScope, $timeout, $parse, $filter, select2Config, select2Stack) {
+    .directive("select2", ["$rootScope", "$timeout", "$parse", "$animate", "select2Config", "select2Stack", function ($rootScope, $timeout, $parse, $animate, select2Config, select2Stack) {
         "use strict";
-
-        var filter = $filter("filter");
 
         function sortedKeys(obj) {
             var keys = [];
@@ -36,8 +34,10 @@ angular.module("rt.select2", [])
         }
 
         var defaultOptions = {};
-        //                       0000111110000000000022220000000000000000000000333300000000000000444444444444444000000000555555555555555000000066666666666666600000000000000007777000000000000000000088888
+        // jscs:disable validateIndentation
+                               //0000111110000000000022220000000000000000000000333300000000000000444444444444444000000000555555555555555000000066666666666666600000000000000007777000000000000000000088888
         var NG_OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?(?:\s+group\s+by\s+(.*))?\s+for\s+(?:([\$\w][\$\w]*)|(?:\(\s*([\$\w][\$\w]*)\s*,\s*([\$\w][\$\w]*)\s*\)))\s+in\s+(.*?)(?:\s+track\s+by\s+(.*?))?$/;
+        // jscs:enable validateIndentation
 
         if (select2Config) {
             angular.extend(defaultOptions, select2Config);
@@ -47,13 +47,14 @@ angular.module("rt.select2", [])
             require: "ngModel",
             priority: 1,
             restrict: "E",
-            template: "<input type=\"hidden\"></input>",
+            template: "<input type=\"hidden\">",
             replace: true,
             link: function (scope, element, attrs, controller) {
                 var getOptions;
 
                 var opts = angular.extend({}, defaultOptions, scope.$eval(attrs.options));
                 var isMultiple = angular.isDefined(attrs.multiple) || opts.multiple;
+                var hideSearchBox = angular.isDefined(attrs.hideSearchbox) && attrs.hideSearchbox !== "false";
 
                 opts.multiple = isMultiple;
 
@@ -64,11 +65,21 @@ angular.module("rt.select2", [])
                     };
                 }
 
-                if (attrs.placeholder) {
-                    opts.placeholder = attrs.placeholder;
+                if (attrs.emptyValue) {
+                    var baseIsEmpty = controller.$isEmpty;
+                    controller.$isEmpty = function isSelect2Empty(value) {
+                        return baseIsEmpty(value) || value === attrs.emptyValue;
+                    };
                 }
 
-                var filterOptions = $parse(attrs.optionsFilter);
+                var placeholder = attrs.placeholder || attrs.emptyValue;
+                if (placeholder) {
+                    opts.placeholder = placeholder;
+                }
+
+                if (attrs.allowClear) {
+                    opts.allowClear = attrs.allowClear;
+                }
 
                 // All values returned from Select2 are strings. This is a
                 // problem if you supply integer indexes: they'll become
@@ -77,17 +88,6 @@ angular.module("rt.select2", [])
                 // optionItems object, to be able to return the correctly typed
                 // value.
                 var optionItems = {};
-
-                function filterValues(values) {
-                    if (filterOptions) {
-                        var filterParams = filterOptions(scope);
-                        if (filterParams) {
-                            return filter(values, filterParams);
-                        }
-                    }
-
-                    return values;
-                }
 
                 if (attrs.s2Options) {
                     var match;
@@ -103,7 +103,7 @@ angular.module("rt.select2", [])
 
                     getOptions = function (callback) {
                         optionItems = {};
-                        var values = filterValues(valuesFn(scope));
+                        var values = valuesFn(scope);
                         var keys = (keyName ? sortedKeys(values) : values) || [];
 
                         var options = [];
@@ -134,7 +134,7 @@ angular.module("rt.select2", [])
                     };
 
                     opts.query = function (query) {
-                        var values = filterValues(valuesFn(scope));
+                        var values = valuesFn(scope);
                         var keys = (keyName ? sortedKeys(values) : values) || [];
 
                         var options = [];
@@ -165,9 +165,13 @@ angular.module("rt.select2", [])
                     };
 
                     // Make sure changes to the options get filled in
-                    scope.$watch(match[7], function () {
+                    scope.$watchCollection(match[7], function () {
                         controller.$render();
                     });
+
+                    // Force Load optionItems
+                    getOptions(angular.noop);
+
                 } else {
                     if (!opts.query) {
                         throw new Error("You need to supply a query function!");
@@ -207,23 +211,56 @@ angular.module("rt.select2", [])
                                     selection.push(option);
                                 }
                             }
-                            callback(selection);
+                            return callback(selection);
                         });
                     } else {
-                        getOptions(function () {
-                            callback(optionItems[controller.$viewValue] || { obj: {} });
+                        var currentValue = optionItems[controller.$viewValue];
+                        if (currentValue)
+                        {
+                            return callback(currentValue);
+                        }
+
+                        getOptions(function (options) {
+                            for (var i = 0; i < options.length; i++) {
+                                var option = options[i];
+                                if (controller.$viewValue === option.id)
+                                {
+                                    return callback(option);
+                                }
+                            }
+                            return callback();
                         });
                     }
                 }
 
+                var initialized = false;
+
                 controller.$render = function () {
-                    getSelection(function (selection) {
+
+                    if (!initialized)
+                    {
+                        return;
+                    }
+
+                    if (controller.$isEmpty(this.$viewValue)) {
+                        $animate.removeClass(element.select2("container"), "select2-container-not-empty");
+
                         if (isMultiple) {
-                            element.select2("data", selection);
+                            element.select2("data", this.$viewValue);
                         } else {
-                            element.select2("val", selection.id);
+                            element.select2("val", this.$viewValue);
                         }
-                    });
+                    } else {
+                        $animate.addClass(element.select2("container"), "select2-container-not-empty");
+
+                        getSelection(function (selection) {
+                            if (isMultiple) {
+                                element.select2("data", selection);
+                            } else {
+                                element.select2("val", selection.id);
+                            }
+                        });
+                    }
                 };
 
                 if (!opts.initSelection) {
@@ -233,8 +270,11 @@ angular.module("rt.select2", [])
                 } else {
                     var _initSelection = opts.initSelection;
                     opts.initSelection = function (element, callback) {
-                        _initSelection(element, function (result) {
-                            optionItems[result.id] = result;
+                        _initSelection(controller.$viewValue, function (result) {
+                            if (result)
+                            {
+                                optionItems[result.id] = result;
+                            }
                             callback(result);
                         });
                     };
@@ -252,6 +292,8 @@ angular.module("rt.select2", [])
                 });
 
                 $timeout(function () {
+                    initialized = true;
+                    element.val(controller.$viewValue);
                     element.select2(opts);
                     element.on("change", function (e) {
                         scope.$evalAsync(function () {
@@ -283,7 +325,13 @@ angular.module("rt.select2", [])
                         scope.$evalAsync(controller.$setTouched);
                     });
 
-                    controller.$render();
+                    if (opts.allowClear) {
+                        $animate.addClass(element.select2("container"), "select2-container-allow-clear");
+                    }
+
+                    if (hideSearchBox) {
+                        $animate.addClass(element.select2("dropdown"), "select2-searchbox-hidden");
+                    }
                 });
             }
         };

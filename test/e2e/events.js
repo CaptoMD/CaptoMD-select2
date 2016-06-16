@@ -33,7 +33,7 @@ describe('Events', function () {
         page.limitOptionsNumber();
         page.chooseUnavailableOption();
 
-        expect(page.getChosenLabel()).toEqual('');
+        expect(page.getChosenLabel()).toEqual(' ');
     });
 });
 

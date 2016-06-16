@@ -168,6 +168,10 @@ angular.module("rt.select2", [])
                     scope.$watchCollection(match[7], function () {
                         controller.$render();
                     });
+
+                    // Force Load optionItems
+                    getOptions(angular.noop);
+
                 } else {
                     if (!opts.query) {
                         throw new Error("You need to supply a query function!");
@@ -207,28 +211,55 @@ angular.module("rt.select2", [])
                                     selection.push(option);
                                 }
                             }
-                            callback(selection);
+                            return callback(selection);
                         });
                     } else {
-                        getOptions(function () {
-                            callback(optionItems[controller.$viewValue] || { obj: {} });
+                        var currentValue = optionItems[controller.$viewValue];
+                        if (currentValue)
+                        {
+                            return callback(currentValue);
+                        }
+
+                        getOptions(function (options) {
+                            for (var i = 0; i < options.length; i++) {
+                                var option = options[i];
+                                if (controller.$viewValue === option.id)
+                                {
+                                    return callback(option);
+                                }
+                            }
+                            return callback();
                         });
                     }
                 }
 
+                var initialized = false;
+
                 controller.$render = function () {
-                    getSelection(function (selection) {
-                        if (isMultiple) {
-                            element.select2("data", selection);
-                        } else {
-                            element.select2("val", selection.id);
-                        }
-                    });
+
+                    if (!initialized)
+                    {
+                        return;
+                    }
 
                     if (controller.$isEmpty(this.$viewValue)) {
                         $animate.removeClass(element.select2("container"), "select2-container-not-empty");
+
+                        if (isMultiple) {
+                            element.select2("data", this.$viewValue);
+                        } else {
+                            element.select2("val", this.$viewValue);
+                        }
                     } else {
                         $animate.addClass(element.select2("container"), "select2-container-not-empty");
+
+                        getSelection(function (selection) {
+                            if (isMultiple) {
+                                element.select2("data", selection);
+                            } else {
+                                element.select2("val", selection.id);
+                            }
+                        });
                     }
                 };
 
@@ -239,8 +270,11 @@ angular.module("rt.select2", [])
                 } else {
                     var _initSelection = opts.initSelection;
                     opts.initSelection = function (element, callback) {
-                        _initSelection(element, function (result) {
-                            optionItems[result.id] = result;
+                        _initSelection(controller.$viewValue, function (result) {
+                            if (result)
+                            {
+                                optionItems[result.id] = result;
+                            }
                             callback(result);
                         });
                     };
@@ -258,6 +292,8 @@ angular.module("rt.select2", [])
                 });
 
                 $timeout(function () {
+                    initialized = true;
+                    element.val(controller.$viewValue);
                     element.select2(opts);
                     element.on("change", function (e) {
                         scope.$evalAsync(function () {
@@ -296,8 +332,6 @@ angular.module("rt.select2", [])
                     if (hideSearchBox) {
                         $animate.addClass(element.select2("dropdown"), "select2-searchbox-hidden");
                     }
-
-                    controller.$render();
                 });
             }
         };
