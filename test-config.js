@@ -1,6 +1,6 @@
 exports.config = {
     specs: [
-        'test/*.js'
+        'test/e2e/*.js'
     ],
     jasmineNodeOpts: {
         defaultTimeoutInterval: 30000
