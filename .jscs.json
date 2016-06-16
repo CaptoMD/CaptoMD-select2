@@ -1,4 +1,5 @@
 {
+    "excludeFiles": ["bower_components/**", "test/**", "karma.conf.js"],
     "requireCurlyBraces": ["if", "else", "for", "while", "do", "try", "catch"],
     "requireSpaceAfterKeywords": ["if", "else", "for", "while", "do", "switch", "return", "try", "catch"],
     "requireParenthesesAroundIIFE": true,

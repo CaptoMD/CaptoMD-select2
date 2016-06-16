@@ -18,12 +18,16 @@
     "ddescribe",
     "it",
     "iit",
+    "fit",
     "beforeEach",
+    "afterEach",
     "browser",
     "expect",
     "element",
     "by",
-    "protractor"
+    "protractor",
+    "jasmine",
+    "inject"
   ]
 }
 
