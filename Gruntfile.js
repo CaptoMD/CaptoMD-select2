@@ -11,6 +11,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-protractor-runner");
     grunt.loadNpmTasks("grunt-sauce-tunnel");
     grunt.loadNpmTasks("grunt-shell");
+    grunt.loadNpmTasks("grunt-karma");
 
     grunt.initConfig({
         config: {
@@ -125,6 +126,16 @@ module.exports = function (grunt) {
                         browser: "firefox"
                     }
                 }
+            }
+        },
+
+        karma: {
+            options: {
+                configFile: "karma.conf.js",
+                browsers: ["Chrome"]
+            },
+            unit: {
+                reporters: "dots"
             }
         },
 
