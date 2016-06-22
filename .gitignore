@@ -1,8 +1,4 @@
-.*.swp
 /node_modules
 /bower_components
-/libpeerconnection.log
-/unit-results.xml
-/e2e-results.xml
-/npm-debug.log
 .idea
+target
