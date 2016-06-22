@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="/bower_components/select2/select2.css" />
+        <link rel="stylesheet" type="text/css" href="/bower_components/select2/dist/css/select2.css" />
 
         <script src="/bower_components/jquery/dist/jquery.js"></script>
-        <script src="/bower_components/select2/select2.js"></script>
+        <script src="/bower_components/select2/dist/js/select2.js"></script>
         <script src="/bower_components/angular/angular.js"></script>
         <script src="/dist/angular-select2.js"></script>
         <script src="app.js"></script>
 
-        <style>
-            .select2-container {
-                width: 100px;
-            }
-        </style>
     </head>
     <body ng-app="testapp">
         <div ng-controller="TestController">
@@ -22,7 +17,7 @@
                     <label>Has clear button</label>
 
                     <input id="simpleText" type="text" ng-model="values.cleared" />
-                    <select2 id="simpleSelect2" ng-model="values.cleared" s2-options="id as name for (id, name) in singleOptions" options="{ allowClear: true, placeholder: 'None' }"></select2>
+                    <select style="width: 200px" ng-select2 id="simpleSelect2" ng-model="values.cleared" ng-select2-options="id as name for (id, name) in singleOptions" data-allow-clear="true" data-placeholder="None"></select>
                 </fieldset>
             </form>
         </div>
