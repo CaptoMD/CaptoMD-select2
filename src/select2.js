@@ -20,7 +20,7 @@ angular.module("rt.select2", [])
             }
         };
     })
-    .directive("select2", function ($rootScope, $timeout, $parse, $animate, select2Config, select2Stack) {
+    .directive("select2", function ($rootScope, $timeout, $parse, $animate, $q, select2Config, select2Stack) {
         "use strict";
 
         function sortedKeys(obj) {
@@ -57,7 +57,6 @@ angular.module("rt.select2", [])
 
                 opts.multiple = isMultiple;
 
-                // make sure ngrequired validation works
                 if (isMultiple) {
                     var isEmpty = controller.$isEmpty;
                     controller.$isEmpty = function (value) {
@@ -104,7 +103,7 @@ angular.module("rt.select2", [])
                     var valueFn = $parse(match[2] ? match[1] : valueName);
                     var keyName = match[5];
 
-                    getOptions = function (callback) {
+                    getOptions = function () {
                         optionItems = {};
                         var values = valuesFn(scope);
                         var keys = (keyName ? sortedKeys(values) : values) || [];
@@ -133,7 +132,7 @@ angular.module("rt.select2", [])
                             options.push(optionItems[value]);
                         }
 
-                        callback(options);
+                        $q.when(options);
                     };
 
                     opts.query = function (query) {
@@ -173,7 +172,7 @@ angular.module("rt.select2", [])
                     });
 
                     // Force Load optionItems
-                    getOptions(angular.noop);
+                    getOptions();
 
                 } else {
                     if (!opts.query) {
@@ -194,74 +193,93 @@ angular.module("rt.select2", [])
                     };
 
                     getOptions = function (callback) {
+                        var deferred = $q.defer();
                         opts.query({
                             term: "",
                             callback: function (query) {
-                                callback(query.results);
+                                deferred.resolve(query.results);
                             }
                         });
+                        return deferred.promise;
                     };
                 }
 
-                function getSelection(callback) {
+                function getSelection(modelValue) {
+                    if (controller.$isEmpty(modelValue)) {
+                        return $q.when(undefined);
+                    }
                     if (isMultiple) {
-                        var currentValues = [];
-                        for (var i = 0; i < controller.$viewValue.length; i++) {
-                            var option = optionItems[controller.$viewValue[i]];
+                        var selectedOptionItems = [];
+                        for (var i = 0; i < modelValue.length; i++) {
+                            var option = optionItems[modelValue[i]];
                             if (angular.isUndefined(option)) {
-                                currentValues = undefined;
+                                selectedOptionItems = undefined;
                                 break;
                             }
-                            currentValues.push(option);
+                            selectedOptionItems.push(option);
                         }
-                        if (angular.isDefined(currentValues)) {
-                            return callback(currentValues);
+                        if (angular.isDefined(selectedOptionItems)) {
+                            return $q.when(selectedOptionItems);
                         }
 
-                        getOptions(function (options) {
+                        return getOptions().then(function (options) {
                             var selection = [];
                             for (var i = 0; i < options.length; i++) {
                                 var option = options[i];
-                                var viewValue = controller.$viewValue || [];
+                                var viewValue = modelValue || [];
                                 if (viewValue.indexOf(option.id) > -1) {
                                     selection.push(option);
                                 }
                             }
-                            return callback(selection);
+                            return selection;
                         });
                     } else {
-                        var currentValue = optionItems[controller.$viewValue];
-                        if (currentValue) {
-                            return callback(currentValue);
+                        var currentOptionItem = optionItems[modelValue];
+                        if (currentOptionItem) {
+                            return $q.when(currentOptionItem);
                         }
 
-                        getOptions(function (options) {
+                        return getOptions().then(function (options) {
                             for (var i = 0; i < options.length; i++) {
                                 var option = options[i];
-                                if (controller.$viewValue === option.id)
+                                if (modelValue === option.id)
                                 {
-                                    return callback(option);
+                                    return option;
                                 }
                             }
-                            return callback();
+                            return undefined;
                         });
+                    }
+                }
+
+                function saveOptionItems(result) {
+                    if (angular.isArray(result))
+                    {
+                        for (var i = 0; i < result.length; i++) {
+                            saveOptionItems(result[i]);
+                        }
+                        return;
+                    }
+                    if (result) {
+                        optionItems[result.id] = result;
                     }
                 }
 
                 if (!opts.initSelection) {
                     opts.initSelection = function (element, callback) {
-                        getSelection(callback);
+                        if (controller.$isEmpty(controller.$modelValue)) {
+                            return callback();
+                        }
+                        getSelection(controller.$modelValue).then(callback).then(function () { controller.$validate(); });
                     };
                 } else {
                     var _initSelection = opts.initSelection;
                     opts.initSelection = function (element, callback) {
-                        if (controller.$isEmpty(controller.$viewValue)) {
+                        if (controller.$isEmpty(controller.$modelValue)) {
                             return callback();
                         }
-                        _initSelection(controller.$viewValue, function (result) {
-                            if (result) {
-                                optionItems[result.id] = result;
-                            }
+                        _initSelection(controller.$modelValue, function (result) {
+                            saveOptionItems(result);
                             callback(result);
                             controller.$validate();
                         });
@@ -295,7 +313,7 @@ angular.module("rt.select2", [])
 
                     controller.$render = function () {
                         if (isMultiple) {
-                            getSelection(function (selection) {
+                            getSelection(controller.$viewValue).then(function (selection) {
                                 element.select2("data", selection);
                             });
                         } else if (element.select2("val") !== this.$viewValue) {
@@ -314,6 +332,7 @@ angular.module("rt.select2", [])
                                     return false;
                                 }
                             }
+                            return true;
                         } else {
                             return (optionItems[modelValue] && !optionItems[modelValue].invalid);
                         }
