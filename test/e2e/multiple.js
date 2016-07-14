@@ -56,7 +56,7 @@ describe('Multiple', function () {
     it('Should update model on entry', function () {
         page.enter('tw');
         expect(page.getInputValue()).toEqual('1,3,2');
-        page.assertSelectedValues(['One', 'Two', 'Three']);
+        page.assertSelectedValues(['One', 'Three', 'Two']);
     });
 
     it('Should respond to scope changes', function () {

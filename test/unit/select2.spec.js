@@ -51,11 +51,10 @@ describe("Select2", function ()
             $timeout.flush();
 
             expect($rootScope.query).not.toHaveBeenCalled();
-            expect($rootScope.initSelection).toHaveBeenCalled();
-            expect($rootScope.initSelection.calls.count()).toBe(1);
+            expect($rootScope.initSelection).not.toHaveBeenCalled();
         }));
 
-        fit("should init select2", inject(function ($compile) {
+        it("should init select2", inject(function ($compile) {
 
             $rootScope.model = { value: 1 };
 
@@ -66,7 +65,7 @@ describe("Select2", function ()
             expect($rootScope.query).not.toHaveBeenCalled();
             expect($rootScope.initSelection).toHaveBeenCalled();
             expect($rootScope.initSelection.calls.count()).toBe(1);
+            expect($rootScope.initSelection).toHaveBeenCalledWith(1, jasmine.any(Function));
         }));
-
     });
 });
