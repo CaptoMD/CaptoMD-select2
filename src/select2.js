@@ -75,6 +75,8 @@ angular.module("rt.select2", [])
                 var placeholder = attrs.placeholder || attrs.emptyValue;
                 if (placeholder) {
                     opts.placeholder = placeholder;
+                } else if (attrs.allowClear) {
+                    opts.placeholder = "-";
                 }
 
                 if (attrs.allowClear) {
@@ -299,6 +301,10 @@ angular.module("rt.select2", [])
                             element.select2("val", this.$viewValue);
                         }
                     };
+
+                    if (!placeholder) {
+                        $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
+                    }
 
                     if (hideSearchBox) {
                         $animate.addClass(element.select2("dropdown"), "select2-searchbox-hidden");
