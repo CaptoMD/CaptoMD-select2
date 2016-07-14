@@ -263,6 +263,7 @@ angular.module("rt.select2", [])
                                 optionItems[result.id] = result;
                             }
                             callback(result);
+                            controller.$validate();
                         });
                     };
                 }
@@ -299,6 +300,22 @@ angular.module("rt.select2", [])
                             });
                         } else if (element.select2("val") !== this.$viewValue) {
                             element.select2("val", this.$viewValue);
+                        }
+                    };
+
+                    controller.$validators.value = function valueValidation(modelValue) {
+                        if (controller.$isEmpty(modelValue)) {
+                            return true;
+                        }
+                        if (isMultiple) {
+                            for (var i = 0; i < modelValue.length; i++) {
+                                var option = optionItems[modelValue[i]];
+                                if (!option || option.invalid) {
+                                    return false;
+                                }
+                            }
+                        } else {
+                            return (optionItems[modelValue] && !optionItems[modelValue].invalid);
                         }
                     };
 
