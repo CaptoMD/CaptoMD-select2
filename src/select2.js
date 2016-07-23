@@ -49,6 +49,28 @@ angular.module("rt.select2", [])
             restrict: "E",
             template: "<input type=\"hidden\">",
             replace: true,
+            controller: function Select2Controller($element) {
+
+                this.open = function open() {
+                    $element.select2("open");
+                };
+
+                this.close = function close() {
+                    $element.select2("close");
+                };
+
+                function getValue() {
+                    return $element.select2("val");
+                }
+
+                function setValue(val) {
+                    $element.select2("val", val);
+                }
+
+                Object.defineProperty(this, "value", {
+                    get: getValue, set: setValue
+                });
+            },
             link: function (scope, element, attrs, controller) {
 
                 var opts = angular.extend({}, defaultOptions, scope.$eval(attrs.options));
