@@ -44,7 +44,7 @@ angular.module("rt.select2", [])
         }
 
         return {
-            require: "ngModel",
+            require: ["ngModel", "select2"],
             priority: 1,
             restrict: "E",
             template: "<input type=\"hidden\">",
@@ -71,7 +71,10 @@ angular.module("rt.select2", [])
                     get: getValue, set: setValue
                 });
             },
-            link: function (scope, element, attrs, controller) {
+            link: function (scope, element, attrs, controllers) {
+
+                var ngModelController = controllers[0];
+                var select2Controller = controllers[1];
 
                 var opts = angular.extend({}, defaultOptions, scope.$eval(attrs.options));
                 var isMultiple = angular.isDefined(attrs.multiple) || opts.multiple;
@@ -80,15 +83,15 @@ angular.module("rt.select2", [])
                 opts.multiple = isMultiple;
 
                 if (isMultiple) {
-                    var isEmpty = controller.$isEmpty;
-                    controller.$isEmpty = function (value) {
+                    var isEmpty = ngModelController.$isEmpty;
+                    ngModelController.$isEmpty = function (value) {
                         return isEmpty(value) || value.length === 0;
                     };
                 }
 
                 if (attrs.emptyValue) {
-                    var baseIsEmpty = controller.$isEmpty;
-                    controller.$isEmpty = function isSelect2Empty(value) {
+                    var baseIsEmpty = ngModelController.$isEmpty;
+                    ngModelController.$isEmpty = function isSelect2Empty(value) {
                         return baseIsEmpty(value) || value === attrs.emptyValue;
                     };
                 }
@@ -190,7 +193,7 @@ angular.module("rt.select2", [])
 
                     // Make sure changes to the options get filled in
                     scope.$watchCollection(match[7], function () {
-                        controller.$render();
+                        ngModelController.$render();
                     });
 
                     // Force Load optionItems
@@ -214,7 +217,7 @@ angular.module("rt.select2", [])
                         queryFn(query);
                     };
 
-                    getOptions = function (callback) {
+                    getOptions = function () {
                         var deferred = $q.defer();
                         opts.query({
                             term: "",
@@ -227,7 +230,7 @@ angular.module("rt.select2", [])
                 }
 
                 function getSelection(modelValue) {
-                    if (controller.$isEmpty(modelValue)) {
+                    if (ngModelController.$isEmpty(modelValue)) {
                         return $q.when(undefined);
                     }
                     if (isMultiple) {
@@ -275,8 +278,7 @@ angular.module("rt.select2", [])
                 }
 
                 function saveOptionItems(result) {
-                    if (angular.isArray(result))
-                    {
+                    if (angular.isArray(result)) {
                         for (var i = 0; i < result.length; i++) {
                             saveOptionItems(result[i]);
                         }
@@ -289,85 +291,86 @@ angular.module("rt.select2", [])
 
                 if (!opts.initSelection) {
                     opts.initSelection = function (element, callback) {
-                        if (controller.$isEmpty(controller.$modelValue)) {
+                        if (ngModelController.$isEmpty(ngModelController.$modelValue)) {
                             return callback();
                         }
-                        getSelection(controller.$modelValue).then(callback).then(function () { controller.$validate(); });
+                        getSelection(ngModelController.$modelValue).then(callback).then(function () { ngModelController.$validate(); });
                     };
                 } else {
                     var _initSelection = opts.initSelection;
                     opts.initSelection = function (element, callback) {
-                        if (controller.$isEmpty(controller.$modelValue)) {
+                        if (ngModelController.$isEmpty(ngModelController.$modelValue)) {
                             return callback();
                         }
-                        _initSelection(controller.$modelValue, function (result) {
+                        _initSelection(ngModelController.$modelValue, function (result) {
                             saveOptionItems(result);
                             callback(result);
-                            controller.$validate();
+                            ngModelController.$validate();
                         });
                     };
                 }
 
                 // register with the select2stack
-                var controlObj = {
-                    close: function () {
-                        element.select2("close");
+                select2Stack.$register(select2Controller);
+                scope.$on("destroy", function () {
+                    select2Stack.$unregister(select2Controller);
+                });
+
+                element.val(ngModelController.$viewValue);
+                element.select2(opts);
+                element.on("change", function (e) {
+                    ngModelController.$setViewValue(e.val);
+                });
+
+                element.on("select2-blur", function () {
+                    if (ngModelController.$touched) {
+                        return;
+                    }
+                    ngModelController.$setTouched();
+                });
+
+                element.on("select2-open", function () {
+                    scope.$emit("select2:open");
+                });
+
+                element.on("select2-close", function () {
+                    scope.$emit("select2:close");
+                });
+
+                ngModelController.$render = function () {
+                    if (isMultiple) {
+                        getSelection(ngModelController.$viewValue).then(function (selection) {
+                            element.select2("data", selection);
+                        });
+                    } else if (select2Controller.value !== this.$viewValue) {
+                        select2Controller.value = this.$viewValue;
                     }
                 };
-                select2Stack.$register(controlObj);
-                scope.$on("destroy", function () {
-                    select2Stack.$unregister(controlObj);
-                });
 
-                $timeout(function () {
-                    element.val(controller.$viewValue);
-                    element.select2(opts);
-                    element.on("change", function (e) {
-                        controller.$setViewValue(e.val);
-                    });
-
-                    element.on("select2-blur", function () {
-                        if (controller.$touched) {
-                            return;
-                        }
-                        controller.$setTouched();
-                    });
-
-                    controller.$render = function () {
-                        if (isMultiple) {
-                            getSelection(controller.$viewValue).then(function (selection) {
-                                element.select2("data", selection);
-                            });
-                        } else if (element.select2("val") !== this.$viewValue) {
-                            element.select2("val", this.$viewValue);
-                        }
-                    };
-
-                    controller.$validators.value = function valueValidation(modelValue) {
-                        if (controller.$isEmpty(modelValue)) {
-                            return true;
-                        }
-                        if (isMultiple) {
-                            for (var i = 0; i < modelValue.length; i++) {
-                                var option = optionItems[modelValue[i]];
-                                if (!option || option.invalid) {
-                                    return false;
-                                }
+                ngModelController.$validators.value = function valueValidation(modelValue) {
+                    if (ngModelController.$isEmpty(modelValue)) {
+                        return true;
+                    }
+                    if (isMultiple) {
+                        for (var i = 0; i < modelValue.length; i++) {
+                            var option = optionItems[modelValue[i]];
+                            if (!option || option.invalid) {
+                                return false;
                             }
-                            return true;
-                        } else {
-                            return (optionItems[modelValue] && !optionItems[modelValue].invalid);
                         }
-                    };
-
-                    if (!placeholder) {
-                        $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
+                        return true;
+                    } else {
+                        return (optionItems[modelValue] && !optionItems[modelValue].invalid);
                     }
+                };
 
-                    if (hideSearchBox) {
-                        $animate.addClass(element.select2("dropdown"), "select2-searchbox-hidden");
-                    }
-                });
+                if (!placeholder) {
+                    $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
+                }
+
+                if (hideSearchBox) {
+                    $animate.addClass(element.select2("dropdown"), "select2-searchbox-hidden");
+                }
             }
         };
     });
