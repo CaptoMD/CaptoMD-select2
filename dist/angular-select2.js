@@ -80,6 +80,16 @@ angular.module("rt.select2", [])
                 var isMultiple = angular.isDefined(attrs.multiple) || opts.multiple;
                 var hideSearchBox = angular.isDefined(attrs.hideSearchbox) && attrs.hideSearchbox !== "false";
 
+                Object.defineProperty(select2Controller, "options", {
+                    value: opts
+                });
+                Object.defineProperty(select2Controller, "isMultiple", {
+                    value: isMultiple
+                });
+                Object.defineProperty(select2Controller, "hideSearchBox", {
+                    value: hideSearchBox
+                });
+
                 opts.multiple = isMultiple;
 
                 if (isMultiple) {
