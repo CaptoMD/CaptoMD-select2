@@ -167,7 +167,7 @@ angular.module("rt.select2", [])
                             options.push(optionItems[value]);
                         }
 
-                        $q.when(options);
+                        return $q.when(options);
                     };
 
                     opts.query = function (query) {
