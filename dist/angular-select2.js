@@ -267,9 +267,15 @@ angular.module("rt.select2", [])
                                     }
                                 }
                                 controller.$setViewValue(vals);
+                                if (attrs.onChange) {
+                                    scope.$eval(attrs.onChange, { values: vals });
+                                }
                             } else {
                                 val = optionItems[e.val];
                                 controller.$setViewValue(val ? val.id : null);
+                                if (attrs.onChange) {
+                                    scope.$eval(attrs.onChange, { value: val ? val.id : null });
+                                }
                             }
 
                             controller.$render();
