@@ -1,6 +1,7 @@
 var serveStatic = require("serve-static");
 
 module.exports = function (grunt) {
+    grunt.loadNpmTasks("grunt-babel");
     grunt.loadNpmTasks("grunt-bump");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-concat");
@@ -54,6 +55,18 @@ module.exports = function (grunt) {
             dist: {
                 files: {
                     "dist/<%= config.name %>.js": ["src/*.js"]
+                }
+            }
+        },
+
+        babel: {
+            options: {
+                sourceMap: false,
+                presets: ["es2015"]
+            },
+            dist: {
+                files: {
+                    "dist/<%= config.name %>.js": "dist/<%= config.name %>.js"
                 }
             }
         },
@@ -182,7 +195,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("ci_saucelabs", browserTasks);
     grunt.registerTask("default", ["test"]);
-    grunt.registerTask("build", ["clean", "jshint", "jscs", "concat", "ngAnnotate", "uglify"]);
+    grunt.registerTask("build", ["clean", "jshint", "jscs", "concat", "babel", "ngAnnotate", "uglify"]);
     grunt.registerTask("test", ["build", "shell:protractor_update", "connect:e2e", "protractor:dev", "watch:all"]);
     grunt.registerTask("ci", ["build", "shell:protractor_update", "connect:e2e", "protractor:ci"]);
     grunt.registerTask("saucelabs", ["build", "shell:protractor_update", "sauce_tunnel", "connect:e2e", "ci_saucelabs"]);
