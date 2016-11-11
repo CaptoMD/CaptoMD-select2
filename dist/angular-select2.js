@@ -50,6 +50,9 @@ angular.module("rt.select2", [])
             template: "<input type=\"hidden\"></input>",
             replace: true,
             link: function (scope, element, attrs, controller) {
+                if (typeof(jQuery) !== "undefined") {
+                    element = jQuery(element);
+                }
                 var getOptions;
 
                 var opts = angular.extend({}, defaultOptions, scope.$eval(attrs.options));
