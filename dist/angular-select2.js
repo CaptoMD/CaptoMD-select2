@@ -6,7 +6,7 @@ require("Select2/select2.css");
 
 require("select2-bootstrap-css/select2-bootstrap.css");
 
-angular.module("rt.select2", []).value("select2Config", {}).factory("select2Stack", function () {
+module.exports = angular.module("rt.select2", []).value("select2Config", {}).factory("select2Stack", function () {
     var stack = [];
 
     return {
@@ -302,4 +302,4 @@ angular.module("rt.select2", []).value("select2Config", {}).factory("select2Stac
             });
         }
     };
-}]);
+}]).name;
