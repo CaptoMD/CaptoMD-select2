@@ -76,6 +76,7 @@ module.exports = angular.module("rt.select2", [])
                 }
 
                 var filterOptions = $parse(attrs.optionsFilter);
+                var queryFilter = $parse(attrs.queryFilter);
 
                 // All values returned from Select2 are strings. This is a
                 // problem if you supply integer indexes: they'll become
@@ -142,6 +143,16 @@ module.exports = angular.module("rt.select2", [])
 
                     opts.query = function (query) {
                         var values = filterValues(valuesFn(scope));
+                        var queryFilterValues;
+                        if (queryFilter) {
+                            queryFilterValues = queryFilter(scope, {
+                                term: query.term,
+                                values,
+                            });
+                            if (queryFilterValues) {
+                                values = queryFilterValues;
+                            }
+                        }
                         var keys = (keyName ? sortedKeys(values) : values) || [];
 
                         var options = [];
@@ -158,7 +169,7 @@ module.exports = angular.module("rt.select2", [])
                             var value = valueFn(scope, locals);
                             var label = displayFn(scope, locals) || "";
 
-                            if (label.toLowerCase().indexOf(query.term.toLowerCase()) > -1) {
+                            if (queryFilterValues || label.toLowerCase().indexOf(query.term.toLowerCase()) > -1) {
                                 optionItems[value] = {
                                     id: value,
                                     text: label,
