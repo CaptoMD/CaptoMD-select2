@@ -184,6 +184,7 @@ module.exports = function (grunt) {
     grunt.registerTask("ci_saucelabs", browserTasks);
     grunt.registerTask("default", ["test"]);
     grunt.registerTask("build", ["clean", "jshint", "jscs", "concat", "ngAnnotate", "uglify"]);
+    grunt.registerTask("serve", ["build", "connect:e2e", "watch:all"]);
     grunt.registerTask("test", ["build", "shell:protractor_update", "connect:e2e", "protractor:dev", "watch:all"]);
     grunt.registerTask("ci", ["build", "shell:protractor_update", "connect:e2e", "protractor:ci"]);
     grunt.registerTask("saucelabs", ["build", "shell:protractor_update", "sauce_tunnel", "connect:e2e", "ci_saucelabs"]);

@@ -7,8 +7,10 @@
     "test": "test"
   },
   "scripts": {
+    "postinstall": "node node_modules/grunt-protractor-runner/scripts/webdriver-manager-update",
     "test": "grunt ci",
-    "prepublish": "grunt build"
+    "prepublish": "grunt build",
+    "serve": "grunt serve"
   },
   "keywords": [
     "angular",
