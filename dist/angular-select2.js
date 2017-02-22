@@ -377,6 +377,16 @@ angular.module("rt.select2", [])
                     }
                 };
 
+                if (!isMultiple) {
+                    attrs.$observe("placeholder", function (newValue) {
+                        if (ngModelController.$isEmpty(ngModelController.modelValue)) {
+                            var container = $(element.select2("container"));
+                            container.find(".select2-choice").addClass("select2-default");
+                            container.find(".select2-chosen").html(newValue);
+                        }
+                    });
+                }
+
                 if (!opts.placeholder) {
                     $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
                 }

@@ -46,6 +46,6 @@ describe('Query', function () {
 
         page.clearValue();
         expect(page.getInputValue()).toEqual('');
-        expect(page.getChosenLabel()).toEqual('-');
+        expect(page.getChosenLabel()).toEqual('x');
     });
 });
