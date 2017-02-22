@@ -106,16 +106,19 @@ angular.module("rt.select2", [])
                     };
                 }
 
-                var placeholder = attrs.placeholder || attrs.emptyValue;
-                if (placeholder) {
-                    opts.placeholder = placeholder;
-                } else if (attrs.allowClear) {
-                    opts.placeholder = "-";
+                if (angular.isDefined(attrs.allowClear)) {
+                    opts.allowClear = attrs.allowClear !== "false";
+                }
+                if (angular.isUndefined(opts.placeholder))
+                {
+                    var placeholder = attrs.placeholder || attrs.emptyValue;
+                    if (placeholder) {
+                        opts.placeholder = placeholder;
+                    } else if (opts.allowClear) {
+                        opts.placeholder = "-";
+                    }
                 }
 
-                if (attrs.allowClear) {
-                    opts.allowClear = attrs.allowClear;
-                }
 
                 // All values returned from Select2 are strings. This is a
                 // problem if you supply integer indexes: they'll become
@@ -374,7 +377,7 @@ angular.module("rt.select2", [])
                     }
                 };
 
-                if (!placeholder) {
+                if (!opts.placeholder) {
                     $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
                 }
 
