@@ -8,6 +8,7 @@
   },
   "scripts": {
     "postinstall": "node node_modules/grunt-protractor-runner/scripts/webdriver-manager-update",
+    "watch": "grunt test",
     "test": "grunt ci",
     "prepublish": "grunt build",
     "serve": "grunt serve"

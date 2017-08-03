@@ -82,6 +82,29 @@ angular.module("testapp", ["rt.select2"]).controller("TestController", function 
         }
     };
 
+    $scope.query = function (query) {
+        if (query.term === "T") {
+            query.callback({
+                results: [
+                    {id: 3, text: "C"},
+                    {id: 4, text: "D"}
+                ]
+            });
+        } else {
+            query.callback({
+                results: [
+                    {id: 1, text: "A"},
+                    {id: 2, text: "B"}
+                ]
+            });
+        }
+    };
+
+
+    $scope.initSelection = function (element, callback) {
+        callback({ id: 5, text: "INIT" });
+    };
+
     $scope.initOptions = {
         query: function (query) {
             query.callback({

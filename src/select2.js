@@ -49,6 +49,10 @@ angular.module("rt.select2", [])
             restrict: "E",
             template: "<input type=\"hidden\">",
             replace: true,
+            bindToController: {
+                s2Query: "<",
+                s2InitSelection: "<"
+            },
             controller: function Select2Controller($element) {
 
                 this.open = function open() {
@@ -213,11 +217,11 @@ angular.module("rt.select2", [])
                     getOptions();
 
                 } else {
-                    if (!opts.query) {
+                    if (!opts.query && !attrs.s2Query) {
                         throw new Error("You need to supply a query function!");
                     }
 
-                    var queryFn = opts.query;
+                    var pristineQueryOption = opts.query;
                     opts.query = function (query) {
                         var cb = query.callback;
                         query.callback = function (data) {
@@ -227,7 +231,7 @@ angular.module("rt.select2", [])
                             }
                             cb(data);
                         };
-                        queryFn(query);
+                        (pristineQueryOption || select2Controller.s2Query)(query);
                     };
 
                     getOptions = function () {
@@ -302,7 +306,7 @@ angular.module("rt.select2", [])
                     }
                 }
 
-                if (!opts.initSelection) {
+                if (!opts.initSelection && !attrs.s2InitSelection) {
                     opts.initSelection = function (element, callback) {
                         if (ngModelController.$isEmpty(ngModelController.$modelValue)) {
                             return callback();
@@ -310,12 +314,12 @@ angular.module("rt.select2", [])
                         getSelection(ngModelController.$modelValue).then(callback).then(function () { ngModelController.$validate(); });
                     };
                 } else {
-                    var _initSelection = opts.initSelection;
+                    var pristineInitSelectionOption = opts.initSelection;
                     opts.initSelection = function (element, callback) {
                         if (ngModelController.$isEmpty(ngModelController.$modelValue)) {
                             return callback();
                         }
-                        _initSelection(ngModelController.$modelValue, function (result) {
+                        (pristineInitSelectionOption || select2Controller.s2InitSelection)(ngModelController.$modelValue, function (result) {
                             saveOptionItems(result);
                             callback(result);
                             ngModelController.$validate();
