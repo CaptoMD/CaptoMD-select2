@@ -210,11 +210,9 @@ angular.module("rt.select2", [])
 
                     // Make sure changes to the options get filled in
                     scope.$watchCollection(match[7], function () {
+                        getOptions();
                         ngModelController.$render();
                     });
-
-                    // Force Load optionItems
-                    getOptions();
 
                 } else {
                     if (!opts.query && !attrs.s2Query) {
