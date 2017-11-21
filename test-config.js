@@ -5,5 +5,6 @@ exports.config = {
     jasmineNodeOpts: {
         defaultTimeoutInterval: 30000
     },
-    allScriptsTimeout: 60000
+    allScriptsTimeout: 60000,
+    directConnect: true
 };
