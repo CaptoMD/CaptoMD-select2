@@ -63,6 +63,17 @@ angular.module("rt.select2", [])
                     $element.select2("close");
                 };
 
+                var onReadyCallback = [];
+                this.onReady = function onReady(callback) {
+                    onReadyCallback.push(callback);
+                };
+
+                this.$postLink = function $postLink() {
+                    for (var callback in onReadyCallback) {
+                        callback.apply(this);
+                    }
+                };
+
                 function getValue() {
                     return $element.select2("val");
                 }
