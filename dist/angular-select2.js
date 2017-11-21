@@ -44,11 +44,9 @@ angular.module("rt.select2", [])
         }
 
         return {
-            require: ["ngModel", "select2"],
-            priority: 1,
             restrict: "E",
+            require: ["ngModel", "select2"],
             template: "<input type=\"hidden\">",
-            replace: true,
             bindToController: {
                 s2Query: "<",
                 s2InitSelection: "<"
@@ -61,6 +59,17 @@ angular.module("rt.select2", [])
 
                 this.close = function close() {
                     $element.select2("close");
+                };
+
+                var onReadyCallback = [];
+                this.onReady = function onReady(callback) {
+                    onReadyCallback.push(callback);
+                };
+
+                this.$postLink = function $postLink() {
+                    for (var i = 0; i < onReadyCallback.length; ++i) {
+                        onReadyCallback[i].apply(this);
+                    }
                 };
 
                 function getValue() {
@@ -210,8 +219,9 @@ angular.module("rt.select2", [])
 
                     // Make sure changes to the options get filled in
                     scope.$watchCollection(match[7], function () {
-                        getOptions();
-                        ngModelController.$render();
+                        getOptions().then(function () {
+                            ngModelController.$render();
+                        });
                     });
 
                 } else {
@@ -327,11 +337,11 @@ angular.module("rt.select2", [])
 
                 // register with the select2stack
                 select2Stack.$register(select2Controller);
-                scope.$on("destroy", function () {
+                scope.$on("$destroy", function () {
+                    element.select2("destroy");
                     select2Stack.$unregister(select2Controller);
                 });
 
-                element.val(ngModelController.$viewValue);
                 element.select2(opts);
                 element.on("change", function (e) {
                     ngModelController.$setViewValue(e.val);
