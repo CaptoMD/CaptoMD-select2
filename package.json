@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "select2": "~3.5.2"
+    "select2": "~3.5.2-browserify"
   },
   "devDependencies": {
     "grunt": "^1.0.2",
