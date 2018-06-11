@@ -1,3 +1,5 @@
+[![Known Vulnerabilities](https://snyk.io/test/github/CaptoMD/CaptoMD-select2/badge.svg?targetFile=package.json)](https://snyk.io/test/github/CaptoMD/CaptoMD-select2?targetFile=package.json)
+
 # angular-select2
 
 > [select2](http://ivaynberg.github.io/select2/) bindings for Angular.JS
