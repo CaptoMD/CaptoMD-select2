@@ -238,6 +238,7 @@ angular.module("rt.select2", [])
                                 optionItems[result.id] = result;
                             }
                             cb(data);
+                            ngModelController.$validate();
                         };
                         (pristineQueryOption || select2Controller.s2Query)(query);
                     };
