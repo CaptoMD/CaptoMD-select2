@@ -390,15 +390,27 @@ angular.module("rt.select2", [])
                     }
                 };
 
-                if (!isMultiple) {
-                    attrs.$observe("placeholder", function (newValue) {
+                attrs.$observe("placeholder", function (newValue) {
+                    var data = element.data("select2");
+                    if (data)
+                    {
+                        data.opts.placeholder = newValue;
+                    }
+                    if (!isMultiple) {
                         if (ngModelController.$isEmpty(ngModelController.modelValue)) {
                             var container = $(element.select2("container"));
                             container.find(".select2-choice").addClass("select2-default");
                             container.find(".select2-chosen").html(newValue);
                         }
-                    });
-                }
+                    } else {
+                        data.clearSearch();
+                    }
+                    if (!newValue) {
+                        $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
+                    } else {
+                        $animate.removeClass(element.select2("container"), "select2-placeholder-hidden");
+                    }
+                });
 
                 if (!opts.placeholder) {
                     $animate.addClass(element.select2("container"), "select2-placeholder-hidden");
